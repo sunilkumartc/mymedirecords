@@ -3,6 +3,7 @@ AWS_DB_NAME = "mymedirecords"
 AWS_DB_USER_NAME = "postgres"
 AWS_DB_PASS = "admin1234"
 AWS_DB_PORT = 5432
+SQLALCHEMY_DATABASE_URL = "postgresql://postgres:admin1234@new-mymedirecords.cbs8imeeg5j7.us-east-1.rds.amazonaws.com/mymedirecords"
 
 AWS_access_key_id = "AKIAS3DOCB27QHMT5LBL"
 AWS_secret_access_key = "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"
