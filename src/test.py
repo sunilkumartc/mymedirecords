@@ -51,6 +51,7 @@ class Report(Base):
     doctor_name = Column(String, nullable=True)
     report_name = Column(String)
     patient_name = Column(String, nullable=True)
+
 # Initialize Handlers
 storage_handler = StorageHandler()
 db_handler = DBHandler()  # Initialize DBHandler instance
@@ -63,14 +64,15 @@ class Pipeline:
     def __init__(self):
         self.queue = processing_queue
         self.gpt_handler = GPTHandler()
+        self.total_tests = None  # Initialize total_tests attribute
 
-    def add_to_queue(self, patient_id: int, report_id: int, report_path_s3: str):
-        self.queue.put((patient_id, report_id, report_path_s3))
+    def add_to_queue(self, patient_id: int, report_id: int, report_path_s3: str, processing_event: threading.Event):
+        self.queue.put((patient_id, report_id, report_path_s3, processing_event))
         logger.info(f"INFO: patient_id:{patient_id}, report_id:{report_id}, aws_path:{report_path_s3} added to queue!!")
 
     def start_processing(self):
         while True:
-            patient_id, report_id, report_path_s3 = self.queue.get()
+            patient_id, report_id, report_path_s3, processing_event = self.queue.get()
             logger.info(f"INFO: patient_id:{patient_id}, report_id:{report_id}, aws_path:{report_path_s3} processing started!!")
             try:
                 self.process(patient_id, report_id, report_path_s3)
@@ -78,6 +80,7 @@ class Pipeline:
                 logger.error(f"ERROR: Failed to process report - patient_id:{patient_id}, report_id:{report_id}, error:{str(e)}")
             finally:
                 self.queue.task_done()
+                processing_event.set()  # Signal that processing is complete
 
     def process(self, patient_id: int, report_id: int, report_path_s3: str):
         # Define the paths for S3
@@ -121,10 +124,10 @@ class Pipeline:
             logger.info(f"INFO: patient_id:{patient_id}, report_id:{report_id}:: Uploaded processed file to S3!!")
 
             # Update database with processed results
-            total_tests = db_handler.dump_test_results(patient_id=str(patient_id),
+            self.total_tests = db_handler.dump_test_results(patient_id=str(patient_id),
                                                        report_id=report_id,
                                                        results=json_object)
-            logger.info(f"INFO: patient_id:{patient_id}, report_id:{report_id}:: {total_tests} test values extracted and updated in DB!!")
+            logger.info(f"INFO: patient_id:{patient_id}, report_id:{report_id}:: {self.total_tests} test values extracted and updated in DB!!")
 
         except Exception as e:
             logger.error(f"ERROR: Failed to process report - patient_id:{patient_id}, report_id:{report_id}, error:{str(e)}")
@@ -136,7 +139,8 @@ class Pipeline:
             if json_file_path and os.path.exists(json_file_path):
                 os.remove(json_file_path)
 
-
+    def get_total_tests(self):
+        return self.total_tests
 
 pipeline = Pipeline()
 processing_thread = threading.Thread(target=pipeline.start_processing)
@@ -156,6 +160,7 @@ async def upload_file(phone_number: str = Query(..., description="Phone number o
         ).fetchone()
 
         if not user:
+            logging.info(f"")
             raise HTTPException(status_code=404, detail="User not found")
 
         patient_id = user[0]
@@ -183,10 +188,26 @@ async def upload_file(phone_number: str = Query(..., description="Phone number o
 
         report_id = new_report.reportid
 
-        # Add to processing queue
-        pipeline.add_to_queue(patient_id, report_id, s3_key)
+        # Create an event to signal processing completion
+        processing_event = threading.Event()
 
-        return {"message": "File uploaded successfully and added to processing queue.", "report_id": report_id}
+        # Add to processing queue
+        pipeline.add_to_queue(patient_id, report_id, s3_key, processing_event)
+
+        # Wait for the processing to complete
+        processing_event.wait()
+
+        total_tests_value = pipeline.get_total_tests()
+        print(f"Total tests: {total_tests_value[1]}")
+
+
+        return {"message": "File uploaded successfully and processed.",
+                "report_id": report_id,
+                "uploaded_at": new_report.uploaded_at,
+                "report_name": new_report.report_name,
+                "doctor_name": total_tests_value[1],
+                "patient_name":total_tests_value[2] 
+            }
 
     except Exception as e:
         logger.error(f"ERROR: Failed to upload file - error:{str(e)}")
@@ -194,8 +215,6 @@ async def upload_file(phone_number: str = Query(..., description="Phone number o
 
     finally:
         db.close()
-
-
 
 # Default route
 @app.get("/")
