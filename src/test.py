@@ -1,7 +1,8 @@
-from fastapi import FastAPI, File, UploadFile, HTTPException, Query
+from fastapi import FastAPI, File, UploadFile, HTTPException, Query, BackgroundTasks
+from fastapi.middleware.cors import CORSMiddleware
 import boto3
 import logging
-from sqlalchemy import create_engine, Column, Integer, String, DateTime, Boolean, text
+from sqlalchemy import create_engine, Column, Integer, String, DateTime, text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from datetime import datetime
@@ -19,6 +20,15 @@ from utils import read_pdf, add_test_status
 from log import logger
 
 app = FastAPI()
+
+# Add CORSMiddleware to handle CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allows all origins, you can specify a list of origins
+    allow_credentials=True,
+    allow_methods=["*"],  # Allows all methods (GET, POST, PUT, DELETE, etc.)
+    allow_headers=["*"],  # Allows all headers
+)
 
 # AWS S3 configurations
 AWS_ACCESS_KEY_ID = AWS_access_key_id
@@ -54,7 +64,6 @@ class Report(Base):
 
 # Initialize Handlers
 storage_handler = StorageHandler()
-db_handler = DBHandler()  # Initialize DBHandler instance
 
 # Queue for processing
 processing_queue = queue.Queue()
@@ -64,7 +73,8 @@ class Pipeline:
     def __init__(self):
         self.queue = processing_queue
         self.gpt_handler = GPTHandler()
-        self.total_tests = None  # Initialize total_tests attribute
+        self.total_tests = None
+        self.processing_results = {}
 
     def add_to_queue(self, patient_id: int, report_id: int, report_path_s3: str, processing_event: threading.Event):
         self.queue.put((patient_id, report_id, report_path_s3, processing_event))
@@ -83,16 +93,7 @@ class Pipeline:
                 processing_event.set()  # Signal that processing is complete
 
     def process(self, patient_id: int, report_id: int, report_path_s3: str):
-        # Define the paths for S3
         ext_path_s3 = report_path_s3.replace("reports/", "extracted_reports/").replace(".pdf", ".json")
-
-        # Log the S3 key before attempting to download
-        logger.info(f"INFO: Attempting to download file from S3. S3 key: {report_path_s3}")
-
-        # Add an extended delay before attempting to download the file
-        time.sleep(5)  # 5 seconds delay
-
-        # Download report from S3
         local_file_path = None
         json_file_path = None
         try:
@@ -100,40 +101,42 @@ class Pipeline:
             s3.download_file(S3_BUCKET_NAME, report_path_s3, local_file_path)
             logger.info(f"INFO: patient_id:{patient_id}, report_id:{report_id}:: File downloaded successfully!!")
 
-            # Process the downloaded file
             text = read_pdf(file_path=local_file_path)
             logger.info(f"INFO: patient_id:{patient_id}, report_id:{report_id}:: Text extraction completed!!")
-            logger.info("PDF Parsing Started")
             Gpt_handler = GPTHandler()
             result = Gpt_handler.extract_data(text)
             if result is None or result.get('content') == "Error":
                 logger.error(f"ERROR: Error in data extraction - patient_id:{patient_id}, report_id:{report_id}:: Result ERROR!!")
                 return
 
-            # Add additional processing if needed
             json_object = json.loads(result['content'])
             json_object = add_test_status(json_object)
 
-            # Save processed JSON to a temporary local file
             json_file_path = local_file_path.replace(".pdf", ".json")
             with open(json_file_path, "w") as outfile:
                 json.dump(json_object, outfile)
 
-            # Upload processed JSON to S3 in the `extracted_reports` folder
             s3.upload_file(json_file_path, S3_BUCKET_NAME, ext_path_s3)
             logger.info(f"INFO: patient_id:{patient_id}, report_id:{report_id}:: Uploaded processed file to S3!!")
 
-            # Update database with processed results
-            self.total_tests = db_handler.dump_test_results(patient_id=str(patient_id),
-                                                       report_id=report_id,
-                                                       results=json_object)
+            db_handler = DBHandler()
+            self.total_tests = db_handler.dump_test_results(patient_id=str(patient_id), report_id=report_id, results=json_object)
             logger.info(f"INFO: patient_id:{patient_id}, report_id:{report_id}:: {self.total_tests} test values extracted and updated in DB!!")
+
+            # Store the processing results
+            self.processing_results[report_id] = {
+                "patient_id": patient_id,
+                "report_id": report_id,
+                "report_name": report_path_s3,
+                "uploaded_at": datetime.now(),
+                "doctor_name": self.total_tests[1],
+                "patient_name": self.total_tests[2]
+            }
 
         except Exception as e:
             logger.error(f"ERROR: Failed to process report - patient_id:{patient_id}, report_id:{report_id}, error:{str(e)}")
 
         finally:
-            # Clean up temporary local files if they exist
             if local_file_path and os.path.exists(local_file_path):
                 os.remove(local_file_path)
             if json_file_path and os.path.exists(json_file_path):
@@ -142,17 +145,18 @@ class Pipeline:
     def get_total_tests(self):
         return self.total_tests
 
+    def get_processing_result(self, report_id):
+        return self.processing_results.get(report_id, None)
+
 pipeline = Pipeline()
 processing_thread = threading.Thread(target=pipeline.start_processing)
 processing_thread.daemon = True
 processing_thread.start()
 
-
 # Route to handle file upload and processing
 @app.post("/upload/")
-async def upload_file(phone_number: str = Query(..., description="Phone number of the user"), file: UploadFile = File(...)):
+async def upload_file(file: UploadFile = File(...), phone_number: str = Query(..., description="Phone number of the user"), background_tasks: BackgroundTasks = BackgroundTasks()):
     try:
-        # Fetch user information from PostgreSQL by phone number
         db = SessionLocal()
         user = db.execute(
             text("SELECT id FROM users WHERE phone = :phone_number"),
@@ -164,21 +168,17 @@ async def upload_file(phone_number: str = Query(..., description="Phone number o
             raise HTTPException(status_code=404, detail="User not found")
 
         patient_id = user[0]
-        
-        # Generate the S3 key for upload
         current_time = datetime.now().strftime("%Y%m%d%H%M%S")
         s3_key = f"{S3_REPORTS_FOLDER}{patient_id}/{current_time}_{file.filename}"
 
-        # Upload the original file to S3 with metadata
         s3.upload_fileobj(file.file, S3_BUCKET_NAME, s3_key, ExtraArgs={"Metadata": {"report_id": str(patient_id)}})
         logger.info(f"INFO: File '{file.filename}' uploaded successfully to '{S3_BUCKET_NAME}/{s3_key}'")
 
-        # Insert a new report entry to generate report_id
         new_report = Report(
             patientid=patient_id,
             reportpath=s3_key,
             uploaded_at=datetime.now(),
-            is_seen=0,  # Ensure this is an integer (0 or 1) instead of a boolean (False or True)
+            is_seen=0,
             status=1,
             report_name=current_time
         )
@@ -188,35 +188,35 @@ async def upload_file(phone_number: str = Query(..., description="Phone number o
 
         report_id = new_report.reportid
 
-        # Create an event to signal processing completion
         processing_event = threading.Event()
-
-        # Add to processing queue
         pipeline.add_to_queue(patient_id, report_id, s3_key, processing_event)
+        background_tasks.add_task(pipeline.start_processing)
 
-        # Wait for the processing to complete
-        processing_event.wait()
-
-        total_tests_value = pipeline.get_total_tests()
-        print(f"Total tests: {total_tests_value[1]}")
-
-
-        return {"message": "File uploaded successfully and processed.",
-                "report_id": report_id,
-                "uploaded_at": new_report.uploaded_at,
-                "report_name": new_report.report_name,
-                "doctor_name": total_tests_value[1],
-                "patient_name":total_tests_value[2] 
-            }
+        return {
+            "message": f"File '{file.filename}' uploaded successfully and processing has started",
+            "report_id": report_id,
+            "status": "processing"
+        }
 
     except Exception as e:
-        logger.error(f"ERROR: Failed to upload file - error:{str(e)}")
-        raise HTTPException(status_code=500, detail="Internal server error")
+        logger.error(f"ERROR: Failed to upload or process file - phone_number:{phone_number}, error:{str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to upload or process file")
 
     finally:
         db.close()
 
-# Default route
-@app.get("/")
-async def read_root():
-    return {"message": "Welcome to the file upload and processing service with FastAPI!"}
+
+# Route to check processing status and get results
+@app.get("/status/{report_id}")
+async def get_report_status(report_id: int):
+    result = pipeline.get_processing_result(report_id)
+    if result:
+        return result
+    else:
+        return {"message": "Processing not complete or report ID not found", "status": "processing"}
+
+# Additional routes can be added here if needed
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
