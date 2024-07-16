@@ -2,17 +2,16 @@ from fastapi import FastAPI, File, UploadFile, HTTPException, Query, BackgroundT
 from fastapi.middleware.cors import CORSMiddleware
 import boto3
 import logging
-from sqlalchemy import create_engine, Column, Integer, String, DateTime, text
+from sqlalchemy import create_engine, Column, Integer, String, DateTime, ForeignKey, text
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, relationship
 from datetime import datetime
 import json
 import queue
 import threading
 import os
-import time
 
-from config import AWS_access_key_id, AWS_secret_access_key, AWS_bucket_name, REPORT_PATH, EXTRACTED_PATH, SQLALCHEMY_DATABASE_URL
+from config import AWS_access_key_id, AWS_secret_access_key, AWS_bucket_name, SQLALCHEMY_DATABASE_URL
 from aws_storage_handler import StorageHandler
 from aws_db_handler import DBHandler
 from gpt_handler import GPTHandler
@@ -52,7 +51,7 @@ class Report(Base):
     __tablename__ = 'tblreports'
     reportid = Column(Integer, primary_key=True, index=True)
     patientid = Column(Integer)
-    reportpath = Column(String)
+    reportpath = Column(String, nullable=False, default="")
     uploaded_at = Column(DateTime)
     is_seen = Column(Integer, default=0)  # Use Integer instead of Boolean
     doctorid = Column(Integer, nullable=True)
@@ -61,6 +60,25 @@ class Report(Base):
     doctor_name = Column(String, nullable=True)
     report_name = Column(String)
     patient_name = Column(String, nullable=True)
+
+# Define models for tbltestresults and tbltest
+class TestResult(Base):
+    __tablename__ = 'tbltestresults'
+    resultid = Column(Integer, primary_key=True)
+    testid = Column(Integer)
+    patientid = Column(Integer)
+    reportid = Column(Integer, ForeignKey('tblreports.reportid'))  # Assuming tblreports has a reportid column
+    testvalue = Column(String)
+    status = Column(Integer)
+    uploadeddatetime = Column(DateTime)
+
+class Test(Base):
+    __tablename__ = 'tbltest'
+    testid = Column(Integer, primary_key=True)
+    testname = Column(String)
+    unit = Column(String)
+
+Base.metadata.create_all(bind=engine)
 
 # Initialize Handlers
 storage_handler = StorageHandler()
@@ -164,23 +182,18 @@ async def upload_file(file: UploadFile = File(...), phone_number: str = Query(..
         ).fetchone()
 
         if not user:
-            logging.info(f"")
             raise HTTPException(status_code=404, detail="User not found")
 
         patient_id = user[0]
-        current_time = datetime.now().strftime("%Y%m%d%H%M%S")
-        s3_key = f"{S3_REPORTS_FOLDER}{patient_id}/{current_time}_{file.filename}"
 
-        s3.upload_fileobj(file.file, S3_BUCKET_NAME, s3_key, ExtraArgs={"Metadata": {"report_id": str(patient_id)}})
-        logger.info(f"INFO: File '{file.filename}' uploaded successfully to '{S3_BUCKET_NAME}/{s3_key}'")
-
+        # Create a new report entry with a placeholder for the reportpath
         new_report = Report(
             patientid=patient_id,
-            reportpath=s3_key,
             uploaded_at=datetime.now(),
             is_seen=0,
             status=1,
-            report_name=current_time
+            report_name=file.filename,
+            reportpath=""  # Placeholder value
         )
         db.add(new_report)
         db.commit()
@@ -188,35 +201,110 @@ async def upload_file(file: UploadFile = File(...), phone_number: str = Query(..
 
         report_id = new_report.reportid
 
+        # Format the S3 key as "reports/<patient_id>/<report_id>_<filename>"
+        s3_key = f"{S3_REPORTS_FOLDER}{patient_id}/{report_id}_{file.filename}"
+
+        s3.upload_fileobj(file.file, S3_BUCKET_NAME, s3_key, ExtraArgs={"Metadata": {"report_id": str(report_id)}})
+        logger.info(f"INFO: File '{file.filename}' uploaded successfully to '{S3_BUCKET_NAME}/{s3_key}'")
+
+        # Update the report path in the database
+        new_report.reportpath = s3_key
+        db.commit()
+
         processing_event = threading.Event()
         pipeline.add_to_queue(patient_id, report_id, s3_key, processing_event)
         background_tasks.add_task(pipeline.start_processing)
 
         return {
-            "message": f"File '{file.filename}' uploaded successfully and processing has started",
-            "report_id": report_id,
-            "status": "processing"
+            "message": f"File '{file.filename}' uploaded successfully",
+            "report_id": report_id
         }
 
     except Exception as e:
         logger.error(f"ERROR: Failed to upload or process file - phone_number:{phone_number}, error:{str(e)}")
         raise HTTPException(status_code=500, detail="Failed to upload or process file")
 
+# Route to download the uploaded file
+@app.get("/download/")
+async def download_file(report_id: int):
+    db = SessionLocal()
+    report = db.query(Report).filter(Report.reportid == report_id).first()
+
+    if not report:
+        raise HTTPException(status_code=404, detail="Report not found")
+
+    file_key = report.reportpath
+    if not file_key:
+        raise HTTPException(status_code=404, detail="File path not found in the database")
+
+    presigned_url = s3.generate_presigned_url(
+        ClientMethod='get_object',
+        Params={'Bucket': S3_BUCKET_NAME, 'Key': file_key},
+        ExpiresIn=3600  # URL expiry time in seconds
+    )
+
+    return {"url": presigned_url}
+
+# Route to check report processing status
+@app.get("/status/{report_id}")
+async def get_report_status(report_id: int):
+    try:
+        result = pipeline.get_processing_result(report_id)
+        if result:
+            return {
+                "report_id": result["report_id"],
+                "patient_id": result["patient_id"],
+                "report_name": result["report_name"],
+                "uploaded_at": result["uploaded_at"],
+                "doctor_name": result["doctor_name"],
+                "patient_name": result["patient_name"],
+                "status": "processed"
+            }
+        else:
+            return {
+                "report_id": report_id,
+                "status": "processing"
+            }
+
+    except Exception as e:
+        logger.error(f"ERROR: Failed to retrieve processing status for report_id {report_id}: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to retrieve processing status")
+
+@app.get("/testdetails/{report_id}")
+async def get_test_details(report_id: int):
+    try:
+        db = SessionLocal()
+
+        # Query to get test results based on reportid
+        test_results = db.query(TestResult).filter(TestResult.reportid == report_id).all()
+
+        # Extract testids from test results
+        test_ids = [result.testid for result in test_results]
+
+        # Query to get test details (testid, testname, unit) based on testids
+        tests = db.query(Test).filter(Test.testid.in_(test_ids)).all()
+
+        # Prepare response data
+        test_details = []
+        for result in test_results:
+            test_detail = {
+                "testvalue": result.testvalue,
+                "status": result.status,
+                "testid": result.testid,
+                "testname": next(test.testname for test in tests if test.testid == result.testid),
+                "unit": next(test.unit for test in tests if test.testid == result.testid)
+            }
+            test_details.append(test_detail)
+
+        return test_details
+
+    except Exception as e:
+        logger.error(f"ERROR: Failed to fetch test details for report_id {report_id}: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch test details")
+
     finally:
         db.close()
 
-
-# Route to check processing status and get results
-@app.get("/status/{report_id}")
-async def get_report_status(report_id: int):
-    result = pipeline.get_processing_result(report_id)
-    if result:
-        return result
-    else:
-        return {"message": "Processing not complete or report ID not found", "status": "processing"}
-
-# Additional routes can be added here if needed
-
-if __name__ == "__main__":
+if __name__ == '__main__':
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
