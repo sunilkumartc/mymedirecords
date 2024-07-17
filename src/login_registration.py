@@ -9,6 +9,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from datetime import datetime, timedelta
 import jwt
 from config import SQLALCHEMY_DATABASE_URL
+from test import app as app1
+from upload_delete import app as app2
 
 # Database configuration
 postgres_db_URL = SQLALCHEMY_DATABASE_URL
@@ -46,10 +48,13 @@ def get_db():
     finally:
         db.close()
 
-app = FastAPI()
+main_app = FastAPI()
+
+main_app.mount("/app1", app1)
+main_app.mount("/app2", app2)
 
 # Add CORS middleware
-app.add_middleware(
+main_app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  # Allows all origins, you can specify a list of origins
     allow_credentials=True,
@@ -79,11 +84,11 @@ class UserOut(BaseModel):
     certificate_no: str = None
 
 # Routes
-@app.on_event("startup")
+@main_app.on_event("startup")
 async def startup_event():
     logging.info("Connecting to PostgreSQL database...")
 
-@app.post("/register/", status_code=status.HTTP_200_OK)
+@main_app.post("/register/", status_code=status.HTTP_200_OK)
 def register_user(user: UserCreate, db: Session = Depends(get_db)):
     logging.info(f"Attempting to register user: {user.username}, {user.email}")
 
@@ -120,7 +125,7 @@ def register_user(user: UserCreate, db: Session = Depends(get_db)):
         )
     }
 
-@app.post("/login/", status_code=status.HTTP_200_OK)
+@main_app.post("/login/", status_code=status.HTTP_200_OK)
 def login_user(userLogin: UserLogin, db: Session = Depends(get_db)):
     logging.info(f"Attempting login for user: {userLogin.username_or_email}")
 
@@ -145,12 +150,21 @@ def login_user(userLogin: UserLogin, db: Session = Depends(get_db)):
     # Print message to console
     print(f"User logged in successfully: {userLogin.username_or_email}")
 
+    # Return the access token and user details
     return {
         "message": "Logged in successfully",
         "access_token": token,
-        "token_type": "bearer"
+        "token_type": "bearer",
+        "user": UserOut(
+            id=user.id,
+            username=user.username,
+            email=user.email,
+            phone=user.phone,
+            user_type=user.user_type,
+            certificate_no=user.certificate_no,
+        )
     }
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+    uvicorn.run("main:main_app", host="127.0.0.1", port=8000)
