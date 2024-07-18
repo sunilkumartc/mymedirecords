@@ -1,4 +1,4 @@
-from fastapi import FastAPI, File, UploadFile, HTTPException, Query, BackgroundTasks
+from fastapi import FastAPI, File, UploadFile, HTTPException, Query, BackgroundTasks, Form
 from fastapi.middleware.cors import CORSMiddleware
 import boto3
 import logging
@@ -60,6 +60,7 @@ class Report(Base):
     doctor_name = Column(String, nullable=True)
     report_name = Column(String)
     patient_name = Column(String, nullable=True)
+    gender = Column(String, nullable=True)
 
 # Define models for tbltestresults and tbltest
 class TestResult(Base):
@@ -148,7 +149,8 @@ class Pipeline:
                 "report_name": report_path_s3,
                 "uploaded_at": datetime.now(),
                 "doctor_name": self.total_tests[1],
-                "patient_name": self.total_tests[2]
+                "patient_name": self.total_tests[2],
+                "gender" : self.total_tests[3]
             }
 
         except Exception as e:
@@ -173,7 +175,7 @@ processing_thread.start()
 
 # Route to handle file upload and processing
 @app.post("/upload/")
-async def upload_file(file: UploadFile = File(...), phone_number: str = Query(..., description="Phone number of the user"), background_tasks: BackgroundTasks = BackgroundTasks()):
+async def upload_file(file: UploadFile = File(...), phone_number: str = Query(..., description="Phone number of the user"), filename: str = Form(None), background_tasks: BackgroundTasks = BackgroundTasks()):
     try:
         db = SessionLocal()
         user = db.execute(
@@ -186,13 +188,21 @@ async def upload_file(file: UploadFile = File(...), phone_number: str = Query(..
 
         patient_id = user[0]
 
+        # If no filename is provided, generate one using the current date and time
+        if not filename:
+            filename = datetime.now().strftime("%Y/%m/%d_%H:%M:%S") + ".pdf"
+        else:
+            # Ensure filename ends with .pdf
+            if not filename.endswith(".pdf"):
+                filename += ".pdf"
+
         # Create a new report entry with a placeholder for the reportpath
         new_report = Report(
             patientid=patient_id,
             uploaded_at=datetime.now(),
             is_seen=0,
             status=1,
-            report_name=file.filename,
+            report_name=filename,
             reportpath=""  # Placeholder value
         )
         db.add(new_report)
@@ -202,10 +212,10 @@ async def upload_file(file: UploadFile = File(...), phone_number: str = Query(..
         report_id = new_report.reportid
 
         # Format the S3 key as "reports/<patient_id>/<report_id>_<filename>"
-        s3_key = f"{S3_REPORTS_FOLDER}{patient_id}/{report_id}_{file.filename}"
+        s3_key = f"{S3_REPORTS_FOLDER}{patient_id}/{report_id}_{filename}"
 
         s3.upload_fileobj(file.file, S3_BUCKET_NAME, s3_key, ExtraArgs={"Metadata": {"report_id": str(report_id)}})
-        logger.info(f"INFO: File '{file.filename}' uploaded successfully to '{S3_BUCKET_NAME}/{s3_key}'")
+        logger.info(f"INFO: File '{filename}' uploaded successfully to '{S3_BUCKET_NAME}/{s3_key}'")
 
         # Update the report path in the database
         new_report.reportpath = s3_key
@@ -213,16 +223,17 @@ async def upload_file(file: UploadFile = File(...), phone_number: str = Query(..
 
         processing_event = threading.Event()
         pipeline.add_to_queue(patient_id, report_id, s3_key, processing_event)
-        background_tasks.add_task(pipeline.start_processing)
 
-        return {
-            "message": f"File '{file.filename}' uploaded successfully",
-            "report_id": report_id
-        }
+        # Schedule the background processing
+        background_tasks.add_task(processing_event.wait)
 
+        return {"message": "File uploaded successfully. Processing started.", "report_id": report_id, "report_name": new_report.report_name}
+    
     except Exception as e:
-        logger.error(f"ERROR: Failed to upload or process file - phone_number:{phone_number}, error:{str(e)}")
-        raise HTTPException(status_code=500, detail="Failed to upload or process file")
+        logger.error(f"ERROR: {str(e)}")
+        raise HTTPException(status_code=500, detail="An error occurred while uploading the file")
+    finally:
+        db.close()
 
 # Route to download the uploaded file
 @app.get("/download/")
@@ -258,6 +269,7 @@ async def get_report_status(report_id: int):
                 "uploaded_at": result["uploaded_at"],
                 "doctor_name": result["doctor_name"],
                 "patient_name": result["patient_name"],
+                "gender" : result["Gender"],
                 "status": "processed"
             }
         else:
