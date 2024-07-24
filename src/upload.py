@@ -190,19 +190,18 @@ async def upload_file(file: UploadFile = File(...), phone_number: str = Query(..
 
         # If no filename is provided, generate one using the current date and time
         if not filename:
-            filename = datetime.now().strftime("%Y%m%d%H%M%S") + ".pdf"
+            filename = datetime.now().strftime("%Y%m%d%H%M%S")
         else:
-            # Ensure filename ends with .pdf
-            if not filename.endswith(".pdf"):
-                filename += ".pdf"
+            # Remove .pdf extension if present
+            filename = filename.rstrip(".pdf")
 
-        # Create a new report entry with a placeholder for the reportpath
+        # Create a new report entry with the provided filename
         new_report = Report(
             patientid=patient_id,
             uploaded_at=datetime.now(),
             is_seen=0,
             status=1,
-            report_name=filename,
+            report_name=filename,  # Save filename as provided
             reportpath=""  # Placeholder value
         )
         db.add(new_report)
@@ -211,11 +210,11 @@ async def upload_file(file: UploadFile = File(...), phone_number: str = Query(..
 
         report_id = new_report.reportid
 
-        # Format the S3 key as "reports/<patient_id>/<report_id>_<filename>"
-        s3_key = f"{S3_REPORTS_FOLDER}{patient_id}/{report_id}_{filename}"
+        # Format the S3 key as "reports/<patient_id>/<report_id>_<filename>.pdf"
+        s3_key = f"{S3_REPORTS_FOLDER}{patient_id}/{report_id}_{filename}.pdf"
 
         s3.upload_fileobj(file.file, S3_BUCKET_NAME, s3_key, ExtraArgs={"Metadata": {"report_id": str(report_id)}})
-        logger.info(f"INFO: File '{filename}' uploaded successfully to '{S3_BUCKET_NAME}/{s3_key}'")
+        logger.info(f"INFO: File '{filename}.pdf' uploaded successfully to '{S3_BUCKET_NAME}/{s3_key}'")
 
         # Update the report path in the database
         new_report.reportpath = s3_key
@@ -234,6 +233,7 @@ async def upload_file(file: UploadFile = File(...), phone_number: str = Query(..
         raise HTTPException(status_code=500, detail="An error occurred while uploading the file")
     finally:
         db.close()
+
 
 # Route to download the uploaded file
 @app.get("/download/")
