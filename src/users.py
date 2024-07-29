@@ -8,10 +8,14 @@ import logging
 from fastapi.middleware.cors import CORSMiddleware
 from datetime import datetime, timedelta
 import jwt
-from config import SQLALCHEMY_DATABASE_URL
-from test import app as app1
+from config import SQLALCHEMY_DATABASE_URL, EMAIL_HOST, EMAIL_PORT, EMAIL_USERNAME, EMAIL_PASSWORD
+from upload import app as app1
 from upload_delete import app as app2
 from category_results import app as app3
+from google_login import app as app4
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 
 # Database configuration
 postgres_db_URL = SQLALCHEMY_DATABASE_URL
@@ -54,6 +58,7 @@ main_app = FastAPI()
 main_app.mount("/app1", app1)
 main_app.mount("/app2", app2)
 main_app.mount("/app3", app3)
+main_app.mount("/app4", app4)
 
 # Add CORS middleware
 main_app.add_middleware(
@@ -85,6 +90,34 @@ class UserOut(BaseModel):
     user_type: str
     certificate_no: str = None
 
+# Function to send email
+def send_registration_email(email: str, username: str):
+    message = MIMEMultipart("alternative")
+    message["Subject"] = "Registration mymedirecords"
+    message["From"] = EMAIL_USERNAME
+    message["To"] = email
+
+    text = f"""
+    Dear {username},
+
+    Thank you for registering with us.
+
+    Warm Regards,
+    Mymedirecords
+    """
+
+    part = MIMEText(text, "plain")
+    message.attach(part)
+
+    try:
+        with smtplib.SMTP(EMAIL_HOST, EMAIL_PORT) as server:
+            server.starttls()
+            server.login(EMAIL_USERNAME, EMAIL_PASSWORD)
+            server.sendmail(EMAIL_USERNAME, email, message.as_string())
+        logging.info(f"Registration email sent to {email}")
+    except Exception as e:
+        logging.error(f"Failed to send registration email: {e}")
+
 # Routes
 @main_app.on_event("startup")
 async def startup_event():
@@ -110,6 +143,9 @@ def register_user(user: UserCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(db_user)
     logging.info(f"User registered successfully: {user.username}, {user.email}")
+
+    # Send registration email
+    send_registration_email(user.email, user.username)
 
     # Print message to console
     print(f"User registered successfully: {user.username}, {user.email}")
