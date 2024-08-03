@@ -5,6 +5,7 @@ from sqlalchemy.orm import sessionmaker, relationship
 from pydantic import BaseModel
 from datetime import datetime
 from config import SQLALCHEMY_DATABASE_URL
+from fastapi.middleware.cors import CORSMiddleware
 
 # Replace with your actual database URL
 DATABASE_URL = SQLALCHEMY_DATABASE_URL
@@ -29,6 +30,8 @@ class Report(Base):
     doctor_name = Column(String)  # Assuming correct column name is doctor_name
     report_name = Column(String)  # Assuming correct column name is report_name
     patient_name = Column(String)  # Assuming correct column name is patient_name
+    gender = Column(String)
+    age = Column(String)  # Adding the age column
 
     # Define relationship with TestResult
     test_results = relationship("TestResult", back_populates="report", cascade="all, delete-orphan")
@@ -54,6 +57,15 @@ Base.metadata.create_all(bind=engine)
 # FastAPI instance
 app = FastAPI()
 
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allows all origins, you can specify a list of origins
+    allow_credentials=True,
+    allow_methods=["*"],  # Allows all methods (GET, POST, PUT, DELETE, etc.)
+    allow_headers=["*"],  # Allows all headers
+)
+
 # Pydantic model for report response
 class ReportResponse(BaseModel):
     patient_id: int
@@ -62,6 +74,8 @@ class ReportResponse(BaseModel):
     uploaded_at: datetime
     doctor_name: str
     patient_name: str
+    gender: str
+    age: str
 
 # FastAPI endpoint to fetch reports details by patient ID
 @app.get("/report-details/")
@@ -78,6 +92,8 @@ async def get_report_details(patient_id: int = Query(..., description="Patient I
         # Check if doctor_name or patient_name is None and handle it gracefully
         doctor_name = report.doctor_name if report.doctor_name is not None else ""
         patient_name = report.patient_name if report.patient_name is not None else ""
+        gender = report.gender if report.gender is not None else ""
+        age = report.age if report.age is not None else 0  # Assuming default age is 0 if not provided
         
         report_details.append(
             ReportResponse(
@@ -86,7 +102,9 @@ async def get_report_details(patient_id: int = Query(..., description="Patient I
                 report_name=report.report_name,
                 uploaded_at=report.uploaded_at,
                 doctor_name=doctor_name,
-                patient_name=patient_name
+                patient_name=patient_name,
+                gender=gender,
+                age=age  # Include the age field
             )
         )
     

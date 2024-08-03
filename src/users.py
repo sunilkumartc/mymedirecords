@@ -13,9 +13,13 @@ from upload import app as app1
 from upload_delete import app as app2
 from category_results import app as app3
 from google_login import app as app4
+from doctor_view import app as app5
+from wati_file_process import app as app6
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 
 # Database configuration
 postgres_db_URL = SQLALCHEMY_DATABASE_URL
@@ -59,6 +63,7 @@ main_app.mount("/app1", app1)
 main_app.mount("/app2", app2)
 main_app.mount("/app3", app3)
 main_app.mount("/app4", app4)
+main_app.mount("/app5", app5)
 
 # Add CORS middleware
 main_app.add_middleware(
@@ -68,6 +73,9 @@ main_app.add_middleware(
     allow_methods=["*"],  # Allows all methods (GET, POST, PUT, DELETE, etc.)
     allow_headers=["*"],  # Allows all headers
 )
+
+# Serve the static files from the build/static directory
+main_app.mount("/static", StaticFiles(directory="frontend/build/static"), name="static")
 
 # API models
 class UserCreate(BaseModel):
@@ -203,6 +211,16 @@ def login_user(userLogin: UserLogin, db: Session = Depends(get_db)):
         )
     }
 
+# Route to serve React index.html (for client-side routing)
+@main_app.get("/{catchall:path}")
+async def serve_react_app(catchall: str):
+    return FileResponse("frontend/build/index.html")
+
+# Optionally, serve the index.html for the root path
+@main_app.get("/")
+async def serve_react_root():
+    return FileResponse("frontend/build/index.html")
+
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("main:main_app", host="127.0.0.1", port=8000)
+    uvicorn.run("main:main_app", host="0.0.0.0", port=8000)

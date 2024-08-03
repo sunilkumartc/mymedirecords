@@ -7,6 +7,23 @@ from PyPDF2 import PdfReader,PdfWriter
 
 from google.cloud import documentai_v1beta3 as documentai
 
+
+from datetime import datetime, timedelta
+from jose import JWTError, jwt
+from config import settings  # Ensure this includes SECRET_KEY and ALGORITHM
+
+def create_access_token(data: dict, expires_delta: timedelta = None):
+    to_encode = data.copy()
+    if expires_delta:
+        expire = datetime.utcnow() + expires_delta
+    else:
+        expire = datetime.utcnow() + timedelta(minutes=15)  # Default expiry time
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
+    return encoded_jwt
+
+
+
 def read_pdf1(project_id, location, processor_id, file_path ):
     read_text = []
     # Instantiates a client

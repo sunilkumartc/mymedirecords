@@ -11,7 +11,7 @@ class DBHandler:
         self.connect_db()
         self.insert_sql = "INSERT INTO tbltestresults (testid, patientid, reportid, testvalue, status, " \
                           "uploadeddatetime) VALUES (%s, %s, %s, %s, %s, %s)"
-        self.update_status = """UPDATE tblreports SET status = %s, doctor_name = %s, patient_name=%s, gender=%s WHERE patientid = %s and reportid = %s"""
+        self.update_status = """UPDATE tblreports SET status = %s, doctor_name = %s, patient_name=%s, gender=%s, age=%s WHERE patientid = %s and reportid = %s"""
         self.delete_sql = """DELETE FROM tbltestresults WHERE patientid = %s and reportid = %s"""
         self.test_map = {test_name: idx + 1 for idx, test_name in enumerate(list(tests.keys()))}
 
@@ -36,7 +36,6 @@ class DBHandler:
                     time.sleep(retry_delay)
                     retry_delay *= 2
                 else:
-                    # Handle maximum retry attempts exceeded
                     logger.info("Maximum retry attempts exceeded.")
                     logger.error("ERROR: Not able to connect to db...")
 
@@ -50,9 +49,10 @@ class DBHandler:
                 
                 # Fetch the result
                 report_date = convert_to_postgres_timestamp(results['PersonalDetails'][0]['ReportDate'])
-                doctor_name = results['PersonalDetails'][0]['DoctorName']
-                patient_name = results['PersonalDetails'][0]['Name'] 
-                gender = results['PersonalDetails'][0]['Gender']
+                doctor_name = results['PersonalDetails'][0].get('DoctorName', 'N/A') or 'N/A'
+                patient_name = results['PersonalDetails'][0].get('Name', 'N/A') or 'N/A'
+                gender = results['PersonalDetails'][0].get('Gender', 'N/A') or 'N/A'
+                age = results ['PersonalDetails'][0].get('Age' , 'N/A') or 'N/A'
 
                 count = 0
                 test_results = results  # ['TestResult']
@@ -84,7 +84,7 @@ class DBHandler:
 
                 # Update report status
                 logger.info(f"Updating report status for patient_id: {patient_id}, report_id: {report_id}")
-                cur.execute(self.update_status, (1, doctor_name, patient_name, gender, patient_id, report_id,))
+                cur.execute(self.update_status, (1, doctor_name, patient_name, gender, age, patient_id, report_id,))
                 logger.info(f"Updated report status for patient_id: {patient_id}, report_id: {report_id}")
                 
                 # Commit the changes
@@ -110,7 +110,9 @@ class DBHandler:
                 logger.info('Closing the DB connection')
                 self.conn.close()  # Close connection if still open
         
-        return count, doctor_name, patient_name, gender
+        return count, doctor_name, patient_name, gender, age
+
+
 
 if __name__ == "__main__":
     temp = DBHandler()

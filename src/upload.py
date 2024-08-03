@@ -61,6 +61,7 @@ class Report(Base):
     report_name = Column(String)
     patient_name = Column(String, nullable=True)
     gender = Column(String, nullable=True)
+    age = Column(String, nullable=True)  # Add the age field
 
 # Define models for tbltestresults and tbltest
 class TestResult(Base):
@@ -81,10 +82,9 @@ class Test(Base):
 
 Base.metadata.create_all(bind=engine)
 
-# Initialize Handlers
 storage_handler = StorageHandler()
 
-# Queue for processing
+# Thread-safe queue for processing
 processing_queue = queue.Queue()
 
 # Class to manage processing pipeline
@@ -150,7 +150,8 @@ class Pipeline:
                 "uploaded_at": datetime.now(),
                 "doctor_name": self.total_tests[1],
                 "patient_name": self.total_tests[2],
-                "gender" : self.total_tests[3]
+                "gender": self.total_tests[3],
+                "age": self.total_tests[4]  # Store the age
             }
 
         except Exception as e:
@@ -173,6 +174,20 @@ processing_thread = threading.Thread(target=pipeline.start_processing)
 processing_thread.daemon = True
 processing_thread.start()
 
+@app.get("/check_user/{phone_number}")
+def check_user(phone_number: str):
+    db = SessionLocal()
+    user = db.execute(
+        text("SELECT id FROM users WHERE phone = :phone_number"),
+        {"phone_number": phone_number}
+    ).fetchone()
+
+    if user:
+        return {"message": "User found"}
+    else:
+        raise HTTPException(status_code=404, detail="User not found")
+
+
 # Route to handle file upload and processing
 @app.post("/upload/")
 async def upload_file(file: UploadFile = File(...), phone_number: str = Query(..., description="Phone number of the user"), filename: str = Form(None), background_tasks: BackgroundTasks = BackgroundTasks()):
@@ -184,6 +199,7 @@ async def upload_file(file: UploadFile = File(...), phone_number: str = Query(..
         ).fetchone()
 
         if not user:
+            logger.info(f"INFO: user with phone_number {phone_number} not found ")
             raise HTTPException(status_code=404, detail="User not found")
 
         patient_id = user[0]
@@ -256,7 +272,6 @@ async def download_file(report_id: int):
 
     return {"url": presigned_url}
 
-# Route to check report processing status
 @app.get("/status/{report_id}")
 async def get_report_status(report_id: int):
     try:
@@ -269,7 +284,8 @@ async def get_report_status(report_id: int):
                 "uploaded_at": result["uploaded_at"],
                 "doctor_name": result["doctor_name"],
                 "patient_name": result["patient_name"],
-                "gender" : result["Gender"],
+                "gender": result["gender"],
+                "age": result["age"],  # Include the age in the response
                 "status": "processed"
             }
         else:
