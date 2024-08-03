@@ -1,0 +1,75 @@
+.prescription-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+  }
+  
+ .prescription-container h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #333;
+  }
+  
+  .loading-spinner {
+    text-align: center;
+    font-size: 18px;
+    color: #666;
+  }
+  
+  .prescription-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+  
+  .prescription-item {
+    flex: 1 1 300px;
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  
+  .prescription-info h3 {
+    margin: 0 0 10px;
+    font-size: 20px;
+    color: #007bff;
+  }
+  
+  .prescription-info p {
+    margin: 0;
+    color: #666;
+  }
+  
+  .prescription-actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 15px;
+  }
+  
+  .prescription-actions button {
+    background: #007bff;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  
+  .prescription-actions button:hover {
+    background: #0056b3;
+  }
+  
+  .prescription-actions button:active {
+    background: #004494;
+  }
+  

@@ -1,0 +1,103 @@
+/* Login Page Styles */
+.login-register-container {
+  background-color: #f0f0f0;
+  min-height: 110vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.login-register-form-container {
+  background: rgba(255, 255, 255, 0.9);
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.2);
+  width: 50%;
+  max-width: 300px;
+  text-align: center;
+  margin: 10px;
+}
+
+.login-register-title {
+  font-family: 'Poppins', sans-serif;
+  color: #1851fb;
+  margin-bottom: 20px; /* Added margin for spacing */
+}
+
+.login-register-tab-container {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px; /* Added margin for spacing */
+}
+
+.login-register-tab {
+  flex: 1;
+  padding: 10px;
+  cursor: pointer;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background-color: #f0f0f0;
+  color: #555;
+  font-weight: bold;
+  text-align: center;
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.3s, border 0.3s;
+  margin: 0 9px; /* Added margin for spacing */
+}
+
+.login-register-tab.active {
+  background-color: #4e77f0;
+  color: #fff;
+  border: 1px solid #1851fb;
+}
+
+.login-register-input {
+  width: 70%; /* Reduced width */
+  margin-bottom: 60px; /* Adjusted margin for spacing between fields */
+  padding: 100px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+  font-size: 14px;
+}
+
+.login-register-button {
+  width: 80%; /* Reduced width */
+  margin-top: 40px;
+  margin-bottom: 20px; /* Adjusted margin for spacing */
+  background-color: #4e77f0 !important; /* Set the background color to blue */
+  color: #fff !important; /* Set the text color to white */
+  border: none; /* Remove the border */
+  padding: 10px 20px; /* Add some padding */
+  border-radius: 5px; /* Round the corners */
+  cursor: pointer; /* Change the cursor to pointer */
+  font-size: 16px; /* Increase the font size */
+  font-weight: bold; /* Make the text bold */
+  transition: background-color 0.3s; /* Add a transition effect for the background color */
+}
+
+.login-google-signin {
+  display: flex;
+  justify-content: center; /* Center the Google button */
+  margin-top: 15px;
+  margin-bottom: 20px; /* Adjusted margin for spacing */
+}
+
+.login-register-login-text {
+  margin-top: 10px;
+  font-size: 14px;
+}
+
+.login-register-login-link {
+  color: #1851fb;
+  text-decoration: none;
+  margin-left: 5px; /* Added margin for spacing */
+}
+
+@media (max-width: 600px) {
+  .login-register-form-container {
+    max-width: 100%;
+  }
+}

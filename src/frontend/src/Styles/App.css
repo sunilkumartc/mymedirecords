@@ -1,0 +1,147 @@
+/* Importing Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Poppins:wght@400;700&display=swap');
+
+/* Define CSS classes with different font families */
+.font-montserrat {
+  font-family: 'Montserrat', sans-serif;
+}
+
+.font-poppins {
+  font-family: 'Poppins', sans-serif;
+}
+
+/* Add other styles as needed */
+
+.hero-container {
+  position: relative;
+  width: 96%;
+  height: 70vh;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: rgb(6, 6, 6);
+  border-radius: 20px;
+  margin: 100px auto 0;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.slide {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: 0;
+  transition: opacity 1s ease-in-out, transform 1s ease-in-out;
+}
+
+.slide-content {
+  padding: 20px;
+  border-radius: 10px;
+}
+
+.slide.active {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.slide.prev {
+  transform: translateX(-100%);
+}
+
+.slide.next {
+  transform: translateX(100%);
+}
+
+.slide-button {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: rgba(0, 0, 0, 0.097);
+  color: white;
+  border: none;
+  font-size: 18px;
+  padding: 16px;
+  cursor: pointer;
+  z-index: 10;
+  border-radius: 50%;
+  transition: background-color 0.3s;
+}
+
+.slide-button.prev {
+  left: 20px;
+}
+
+.slide-button.next {
+  right: 20px;
+}
+
+.slide-button:hover {
+  background-color: rgba(49, 45, 45, 0.8);
+}
+
+.left-section {
+  padding: 20px;
+}
+
+.left-section h1 {
+  font-size: 3em;
+  margin-bottom: 20px;
+}
+
+.left-section p {
+  font-size: 1.6em;
+  margin-bottom: 30px;
+}
+
+.app-buttons {
+  margin-bottom: 20px;
+}
+
+.app-buttons button {
+  background-color: #4297f2;
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+  padding: 12px 40px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.3s;
+}
+
+.app-buttons button:hover {
+  background-color: #0056b3;
+  transform: translateY(-2px);
+}
+
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .hero-container {
+    height: 50vh;
+    flex-direction: column;
+    padding: 20px;
+    width: 90%;
+  }
+
+  .slide h1 {
+    font-size: 1.8em;
+  }
+
+  .slide p {
+    font-size: 1em;
+  }
+
+  .slide-button {
+    font-size: 20px;
+    padding: 12px;
+  }
+}

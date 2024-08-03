@@ -1,0 +1,52 @@
+/* NewABHACard.css */
+
+.new-abha-card-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: #f4f7f6;
+  padding: 20px;
+}
+
+.card {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  max-width: 600px;
+  width: 100%;
+  text-align: center;
+}
+
+.card-title {
+  font-size: 24px;
+  color: #333;
+  margin-bottom: 20px;
+}
+
+.card-info {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.info-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 18px;
+  color: #555;
+}
+
+.info-icon {
+  font-size: 20px;
+  color: #4e77f0;
+}
+
+.message {
+  margin-top: 20px;
+  color: #e74c3c;
+  font-size: 16px;
+}
+

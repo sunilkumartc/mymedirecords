@@ -1,0 +1,95 @@
+.get-abha-card-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background: linear-gradient(to bottom, #4e77f0, #39fdd2);
+    padding: 20px;
+    box-sizing: border-box;
+  }
+  
+  .card {
+    background: #fff;
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    width: 100%;
+    max-width: 500px;
+    animation: fadeIn 1s ease-in-out;
+  }
+  
+  .card h1, .card h2 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    color: #333;
+  }
+  
+  .card-info {
+    margin-bottom: 20px;
+  }
+  
+  .card-info p {
+    margin: 0.5rem 0;
+  }
+  
+  .profile-photo {
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 50%;
+    margin-top: 10px;
+  }
+  
+  .otp-form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .otp-form input {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+  
+  .otp-form button, .download-button {
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    background-color: #4e77f0;
+    color: white;
+    cursor: pointer;
+    transition: background 0.3s ease;
+  }
+  
+  .otp-form button:hover, .download-button:hover {
+    background-color: #3a5bd8;
+  }
+  
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  @media (max-width: 600px) {
+    .card {
+      padding: 1.5rem;
+    }
+    
+    .card h1, .card h2 {
+      font-size: 1.25rem;
+    }
+    
+    .profile-photo {
+      width: 100px;
+      height: 100px;
+    }
+  }
+  

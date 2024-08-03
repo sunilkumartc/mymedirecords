@@ -1,0 +1,130 @@
+.upload-options {
+  padding: 20px;
+}
+
+.upload-options__section {
+  margin-bottom: 40px;
+}
+
+.upload-options__title {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #4e77f0;
+  padding: 20px;
+  border-radius: 10px;
+  font-size: 1.2em;
+  position: relative;
+}
+
+.upload-options__underline {
+  height: 4px;
+  background-color: #39fdd2;
+  margin: 10px auto 0;
+  width: 260px;
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 14px;
+}
+.upload-options__underline1 {
+  height: 4px;
+  background-color: #39fdd2;
+  margin: 10px auto 0;
+  width: 290px;
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 14px;
+}
+
+.upload-options__cards {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.upload-options__card {
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  text-align: center;
+  width: 100%;
+  max-width: 300px;
+  transition: transform 0.3s ease-in-out;
+  margin: 10px 0;
+}
+
+.upload-options__card:hover {
+  transform: translateY(-10px);
+}
+
+.upload-options__icon {
+  width: 50px;
+  height: 50px;
+  margin-bottom: 20px;
+}
+
+.upload-options__card h2 {
+  font-size: 1.5em;
+  margin-bottom: 10px;
+}
+
+.upload-options__card p {
+  font-size: 1em;
+  color: #666;
+  margin-bottom: 20px;
+}
+
+.upload-options__arrow {
+  font-size: 3em;
+  color: #1ECAB0;
+  align-self: center;
+}
+
+@media (max-width: 768px) {
+  .upload-options__cards {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .upload-options__arrow {
+    display: none;
+  }
+
+  .upload-options__card {
+    width: 80%;
+  }
+
+  .upload-options__underline1 {
+    width: 250px;
+  }
+  .upload-options__underline {
+    width: 220px;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .upload-options__title {
+    font-size: 1em;
+  }
+
+  .upload-options__card {
+    width: 90%;
+    padding: 10px;
+  }
+
+  .upload-options__icon {
+    width: 40px;
+    height: 40px;
+  }
+
+  .upload-options__card h2 {
+    font-size: 1.2em;
+  }
+
+  .upload-options__card p {
+    font-size: 0.9em;
+  }
+}

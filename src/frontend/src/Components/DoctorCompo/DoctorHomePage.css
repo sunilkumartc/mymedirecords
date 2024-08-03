@@ -1,0 +1,172 @@
+body {
+    background: linear-gradient(to right, #ffffff, #f3f4f6);
+    font-family: 'Poppins', sans-serif;
+    margin: 0; /* Reset default margin */
+  }
+  
+  .doctor-home-page {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 20px;
+    min-height: 100vh;
+    background: rgba(255, 255, 255, 0.8);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .content-wrapper {
+    width: 100%;
+    max-width: 800px;
+    padding: 30px;
+    margin-top: 20px;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 10px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    text-align: center;
+  }
+  
+  .title {
+    font-size: 2.5rem;
+    margin-bottom: 30px;
+    text-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+  
+  .input-group {
+    display: flex;
+    flex-wrap: wrap; /* Allow items to wrap in smaller screens */
+    justify-content: center; /* Center items horizontally */
+    margin-bottom: 20px;
+  }
+  
+  .input-wrapper {
+    display: flex;
+    align-items: center;
+    margin: 10px;
+  }
+  
+  .icon1 {
+    margin-right: 10px;
+    color: #0a0a0a;
+    font-size: 1rem;
+  }
+  
+  .input-field {
+    flex: 1;
+    padding: 15px;
+    border: none;
+    border-radius: 10px;
+    font-size: 1rem;
+    gap: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s, box-shadow 0.3s;
+  }
+  
+  .input-field:focus {
+    transform: scale(1.05);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  }
+  
+  .or {
+    margin-bottom: 1px;
+    font-size: 1.5rem;
+    text-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+  
+  .button-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+  }
+  
+  .send-otp-btn,
+  .submit-btn,
+  .resend-otp-btn {
+    width: 100%;
+    max-width: 300px;
+    padding: 15px;
+    margin: 10px 0;
+    border: none;
+    border-radius: 20px;
+    font-size: 1rem;
+    color: #fff;
+    background: #496bf3;
+    cursor: pointer;
+    transition: background 0.3s, transform 0.3s, box-shadow 0.3s;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .icon-btn {
+    margin-left: 10px;
+    font-size: 0.8rem;
+  }
+  
+  .send-otp-btn:hover,
+  .submit-btn:hover,
+  .resend-otp-btn:hover {
+    background: #3967fd;
+    transform: scale(1.05);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  }
+  
+  .timer {
+    text-align: center;
+    margin-top: 10px;
+    font-size: 1rem;
+    text-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+  
+  @media (max-width: 768px) {
+    .title {
+      font-size: 2rem;
+    }
+  
+    .input-field {
+      font-size: 0.9rem;
+    }
+  
+    .send-otp-btn,
+    .submit-btn,
+    .resend-otp-btn {
+      font-size: 0.9rem;
+    }
+  
+    .icon-btn {
+      font-size: 0.7rem;
+    }
+  
+    .timer {
+      font-size: 0.9rem;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .title {
+      font-size: 1.5rem;
+    }
+  
+    .input-field {
+      font-size: 0.8rem;
+      padding: 12px; /* Adjust padding for smaller inputs */
+    }
+  
+    .send-otp-btn,
+    .submit-btn,
+    .resend-otp-btn {
+      font-size: 0.8rem;
+      padding: 12px; /* Adjust padding for smaller buttons */
+    }
+  
+    .icon-btn {
+      font-size: 0.6rem;
+    }
+  
+    .timer {
+      font-size: 0.8rem;
+    }
+  }
+  

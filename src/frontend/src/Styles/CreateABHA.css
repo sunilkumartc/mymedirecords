@@ -1,0 +1,290 @@
+/* General Styles */
+.abha-create-abha-container {
+  font-family: 'Poppins', sans-serif;
+  color: #333;
+  margin-top: 100px;
+  padding: 0 20px; /* Add padding for mobile view */
+}
+
+.verify-otp-button {
+  display: block;
+  width: 100%; /* Make button full width */
+  max-width: 300px; /* Limit the maximum width */
+  padding: 15px;
+  background: linear-gradient(135deg, #4e77f0, #39fdd2);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 18px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 20px;
+  margin-left: auto;
+  margin-right: auto;
+  transition: transform 0.3s, box-shadow 0.3s, background 0.3s;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.verify-otp-button:hover {
+  background: linear-gradient(135deg, #39fdd2, #4e77f0);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+}
+
+.verify-otp-button:active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.existing-abha-link {
+  margin-top: 10px;
+  font-size: 14px;
+  text-align: center;
+}
+
+.existing-abha-link a {
+  color: #4e77f0;
+  text-decoration: none;
+}
+
+.existing-abha-link a:hover {
+  text-decoration: underline;
+}
+
+.abha-content-wrapper1 {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  padding: 10px;
+}
+
+.abha-abha-info {
+  flex: 1 1 100%; /* Full width on small screens */
+  max-width: 70%; /* 45% width on larger screens */
+  max-height: 100%;
+  padding: 20px;
+  background: #f9f9f9;
+  border-radius: 10px;
+  box-shadow: 10px 4px 8px rgba(0, 0, 0, 0.1);
+  margin-left: 0px;
+}
+
+.abha-create-abha-card {
+  flex: 1 1 100%; /* Full width on small screens */
+  max-width: 30%; /* 45% width on larger screens */
+  max-height: 100%;
+  padding: 20px;
+  background: #f9f9f9;
+  border-radius: 10px;
+  box-shadow: 10px 4px 8px rgba(0, 0, 0, 0.1);
+  margin-right: 0px;
+}
+
+.abha-abha-info h1, .abha-abha-info h2, .abha-create-abha-card h2 {
+  color: #4e77f0;
+}
+
+.abha-abha-info p, .abha-abha-info ul {
+  margin: 10px 0;
+}
+
+.abha-abha-info ul {
+  list-style: none;
+  padding: 0;
+}
+
+.abha-abha-info li {
+  margin: 10px 0;
+  display: flex;
+  align-items: center;
+}
+
+.abha-abha-info li svg {
+  margin-right: 10px;
+  color: #39fdd2;
+}
+
+.abha-create-abha-card h2 {
+  margin-bottom: 20px;
+}
+
+.abha-aadhaar-inputs, .abha-otp-inputs {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap; /* Allow wrapping on small screens */
+  margin-bottom: 10px;
+}
+
+.abha-aadhaar-inputs input, .abha-otp-inputs input {
+  width: 100%;
+  max-width: 30%; /* Limit max width */
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 16px;
+  text-align: center;
+  margin-bottom: 10px; /* Add margin for spacing */
+}
+
+.abha-otp-inputs input {
+  max-width: 15%; /* Limit max width */
+}
+
+.abha-checkbox-label {
+  display: flex;
+  align-items: center;
+  margin: 10px 0;
+}
+
+.abha-checkbox-label input {
+  margin-right: 10px;
+}
+
+.abha-checkbox-label a {
+  color: #4e77f0;
+  text-decoration: underline;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+.abha-existing-abha-link {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.abha-existing-abha-link a {
+  color: #4e77f0;
+  text-decoration: none;
+}
+
+.abha-stats {
+  margin-top: 20px;
+  background: rgba(255, 255, 255, 0.8);
+  padding: 10px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.abha-stats h2 {
+  font-size: 24px;
+  margin-bottom: 20px;
+  color: #4e77f0;
+  font-family: 'Poppins', sans-serif;
+}
+
+.abha-stats table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+}
+
+.abha-stats table, .abha-stats table th, .abha-stats table td {
+  border: 1px solid #ddd;
+  background: white;
+}
+
+.abha-stats table th, .abha-stats table td {
+  padding: 10px;
+  text-align: left;
+}
+
+.abha-stats .stats {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.abha-stats .stats div {
+  flex: 1 1 100%; /* Full width on small screens */
+  max-width: 30%; /* 30% width on larger screens */
+  text-align: center;
+  padding: 20px;
+  border-radius: 10px;
+  background: #f0f4ff;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.abha-stats .stats div span {
+  font-size: 24px;
+  color: #1851fb;
+  display: block;
+  margin-bottom: 10px;
+}
+
+.abha-stats .stats div p {
+  font-size: 14px;
+  color: #555;
+}
+
+button.abha-button-enabled {
+  background: #4e77f0;
+}
+
+button.abha-button-disabled {
+  background: #4e77f0;
+  cursor: not-allowed;
+}
+
+.abha-timer {
+  text-align: center;
+  font-size: 18px;
+  margin-top: 10px;
+  color: #4e77f0;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .abha-content-wrapper1 {
+    flex-direction: column;
+    align-items: center;
+    padding: 10px;
+  }
+
+  .abha-abha-info, .abha-create-abha-card {
+    max-width: 100%; /* Full width for smaller screens */
+    margin: 10px 0;
+  }
+
+  .verify-otp-button {
+    width: 80%; /* Make button smaller on small screens */
+    margin: 20px auto; /* Center the button */
+  }
+
+  .abha-aadhaar-inputs input, .abha-otp-inputs input {
+    width: 100%; /* Full width inputs on small screens */
+    max-width: none;
+    margin-bottom: 10px;
+  }
+
+  .abha-stats .stats div {
+    max-width: 90%; /* Full width stats on small screens */
+    margin-bottom: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .verify-otp-button {
+    width: 90%; /* Make button smaller on very small screens */
+  }
+
+  .abha-stats h2 {
+    font-size: 20px; /* Smaller font size for headings */
+  }
+
+  .abha-stats .stats div span {
+    font-size: 20px; /* Smaller font size for stats */
+  }
+
+  .abha-stats .stats div p {
+    font-size: 12px; /* Smaller font size for stats description */
+  }
+
+  .abha-stats table {
+    display: block;
+    overflow-x: auto; /* Allow horizontal scroll for table */
+    white-space: nowrap; /* Prevent text wrapping */
+  }
+}

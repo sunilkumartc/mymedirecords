@@ -1,0 +1,117 @@
+/* LoginABHA.module.css */
+
+.loginAbhaContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100vh;
+  background-color: #f0f2f5;
+}
+
+.contentWrapper {
+  background: #fff;
+  padding: 40px;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  max-width: 400px;
+  width: 100%;
+  margin-top: 160px;
+}
+
+.contentWrapper h1 {
+  margin-bottom: 20px;
+  color: #4e77f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.inputGroup {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+  background: #f8f9fa;
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+.inputGroup .icon {
+  margin-right: 10px;
+  color: #4e77f0;
+}
+
+.inputGroup input, .inputGroup select {
+  width: 100%;
+  padding: 10px;
+  border: none;
+  outline: none;
+  background: transparent;
+}
+
+.button {
+  width: 100%;
+  padding: 12px;
+  background: linear-gradient(45deg, #4e77f0, #39fdd2);
+  border: none;
+  border-radius: 5px;
+  color: white;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+  transition: background 0.3s;
+  margin-top: 10px;
+}
+
+.button:hover {
+  background: linear-gradient(45deg, #39fdd2, #4e77f0);
+}
+
+.message {
+  margin-top: 20px;
+  color: #333;
+  font-size: 14px;
+}
+.modal {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  right: auto;
+  bottom: auto;
+  transform: translate(-50%, -50%);
+  background: #fff;
+  padding: 2rem;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  max-width: 500px;
+  width: 100%;
+}
+
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.75);
+  z-index: 1000;
+}
+
+.healthIdList {
+  list-style-type: none;
+  padding: 0;
+}
+
+.healthIdItem {
+  padding: 0.5rem;
+  margin: 0.5rem 0;
+  background: #f0f0f0;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.healthIdItem:hover {
+  background: #e0e0e0;
+}

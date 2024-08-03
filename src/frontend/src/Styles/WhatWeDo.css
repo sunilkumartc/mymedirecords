@@ -1,0 +1,181 @@
+/* Importing Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Poppins:wght@400;700&display=swap');
+
+/* Define CSS classes with different font families */
+.font-montserrat {
+  font-family: 'Montserrat', sans-serif;
+}
+
+.font-poppins {
+  font-family: 'Poppins', sans-serif;
+}
+
+/* Apply the fonts to the component */
+.whatwedo {
+  font-family: 'Montserrat', sans-serif; /* Default font for the component */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: #f9f9f9;
+  padding: 40px;
+}
+
+.section-title1 {
+  font-size: 2em;
+  font-weight: 700;
+  margin-bottom: 20px;
+  color: #4e77f0;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.section-title1 span::before {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 4px;
+  background-color: #39fdd2;
+  border-radius: 8px;
+  bottom: -10px;
+  left: 0%;
+}
+
+.flowchart-container {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  width: 100%;
+  position: relative;
+}
+
+.section {
+  flex: 1;
+  padding: 0 20px;
+}
+
+.section-subtitle {
+  font-size: 1.5em;
+  font-weight: 600;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.accordion {
+  margin-top: 20px;
+}
+
+.accordion-item {
+  margin-bottom: 10px;
+  border-bottom: 1px solid #ddd;
+  position: relative;
+}
+
+.accordion-title {
+  padding: 10px;
+  font-size: 1em;
+  cursor: pointer;
+  background-color: #fff;
+  transition: background-color 0.3s;
+  font-weight: 400;
+  font-family: 'Poppins', sans-serif;
+  text-align: center;
+}
+
+.accordion-title:hover,
+.accordion-title.active {
+  background-color: #efefef;
+}
+
+.accordion-content {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+}
+
+.accordion-content.open {
+  max-height: 100px;
+  padding: 10px;
+  background-color: #fafafa;
+}
+
+.arrow-down {
+  text-align: center;
+  font-size: 2em;
+  color: #666;
+}
+
+.divider {
+  width: 50px;
+  background: linear-gradient(180deg, rgb(13, 12, 12), rgb(13, 13, 12));
+  animation: gradient 5s infinite;
+  margin: 0 20px;
+}
+
+@keyframes gradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@media screen and (max-width: 1200px) {
+  .flowchart-container {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .divider {
+    width: 80%;
+    height: 5px;
+    margin: 20px 0;
+  }
+
+  .section {
+    padding-right: 0;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .section-title {
+    font-size: 1.8em;
+  }
+
+  .section-title span::before {
+    width: 100%;
+    left: 1%;
+  }
+
+  .accordion-title {
+    font-size: 0.9em;
+  }
+
+  .accordion-content.open {
+    max-height: 200px;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .section-title {
+    font-size: 1.5em;
+  }
+
+  .section-title span::before {
+    width: 100%;
+    left: 1%;
+  }
+
+  .accordion-title {
+    font-size: 0.8em;
+  }
+
+  .accordion-content.open {
+    max-height: 150px;
+  }
+}

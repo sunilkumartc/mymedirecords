@@ -1,0 +1,111 @@
+/* Updated ABHA Profile Styles */
+
+.abhaProfileContainer {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start; /* Align items to the start for better layout */
+  min-height: 100vh; /* Use min-height instead of height for better responsiveness */
+  background-color: #f0f2f5;
+  padding: 20px;
+  margin-top: 70px;
+  box-sizing: border-box;
+}
+
+.abhaProfileCard {
+  background: #fff;
+  padding: 20px 40px;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  max-width: 600px;
+  width: 100%; /* Ensure full width for better layout */
+}
+
+.abhaProfileCard h1 {
+  margin-bottom: 20px;
+  color: #4e77f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.abhaProfilePicture {
+  margin-bottom: 20px;
+}
+
+.abhaProfileImage {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #4e77f0;
+}
+
+.abhaNoImage {
+  width: 150px;
+  height: 150px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 50%;
+  background-color: #e0e0e0;
+  color: #888;
+  font-size: 14px;
+  border: 3px solid #4e77f0;
+}
+
+.abhaProfileInfo {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.abhaProfileItem {
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.abhaIcon {
+  margin-right: 10px;
+  color: #4e77f0;
+  font-size: 20px;
+}
+
+.abhaProfileItem div span {
+  font-weight: bold;
+  color: #333;
+}
+
+.abhaProfileItem div p {
+  margin: 0;
+  color: #666;
+}
+
+.downloadButton {
+  background-color: #4e77f0;
+  color: #fff;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 20px;
+  transition: background-color 0.3s ease;
+}
+
+.downloadButton:hover {
+  background-color: #3b61d1;
+}
+
+.downloadButton svg {
+  margin-right: 10px;
+}
+
+.errorMessage {
+  color: red;
+  margin-top: 10px;
+}
